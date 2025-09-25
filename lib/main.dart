@@ -113,7 +113,7 @@ class SegundaPantalla extends StatelessWidget {
 
               // Pregunta
               const Text(
-                '¿Te gusta la clase?',
+                '¿Quieres entrar a la calculadora?',
                 style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w500),
                 textAlign: TextAlign.center,
               ),
