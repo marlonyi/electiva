@@ -232,63 +232,45 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
   final TextEditingController _controllerNumero2 = TextEditingController();
 
   void calcular(String op) {
-    // Validación para operaciones que solo requieren un número
+    // Validación de campos vacíos y numéricos
+    String n1 = _controllerNumero1.text.trim();
+    String n2 = _controllerNumero2.text.trim();
     if (op == '√') {
-      if (_controllerNumero1.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('¡Por favor ingresa el número!'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+      if (n1.isEmpty || double.tryParse(n1) == null) {
+        _showError('Por favor ingresa un número válido para la raíz.');
         return;
       }
     } else {
-      // Validación para operaciones que requieren dos números
-      if (_controllerNumero1.text.isEmpty || _controllerNumero2.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('¡Por favor ingresa ambos números!'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+      if (n1.isEmpty ||
+          n2.isEmpty ||
+          double.tryParse(n1) == null ||
+          double.tryParse(n2) == null) {
+        _showError('Por favor ingresa ambos números válidos.');
         return;
       }
     }
 
     setState(() {
-      numero1 = double.tryParse(_controllerNumero1.text) ?? 0;
-      numero2 = double.tryParse(_controllerNumero2.text) ?? 0;
+      numero1 = double.tryParse(n1) ?? 0;
+      numero2 = double.tryParse(n2) ?? 0;
       operacion = op;
       detalleOperacion = '';
-
       switch (op) {
         case '+':
           resultado = numero1 + numero2;
           detalleOperacion = '$numero1 + $numero2 = $resultado';
           break;
+        case '−':
         case '-':
           resultado = numero1 - numero2;
-          detalleOperacion = '$numero1 - $numero2 = $resultado';
+          detalleOperacion = '$numero1 − $numero2 = $resultado';
           break;
         case '×':
           resultado = numero1 * numero2;
           detalleOperacion = '$numero1 × $numero2 = $resultado';
           break;
         case '÷':
-          if (numero2 != 0) {
-            double cociente = numero1 / numero2;
-            double residuo = numero1 % numero2;
-            resultado = cociente;
-            detalleOperacion =
-                '$numero1 ÷ $numero2 = ${cociente.toStringAsFixed(2)}';
-            if (residuo != 0) {
-              detalleOperacion += ' (residuo: ${residuo.toStringAsFixed(2)})';
-            }
-          } else {
-            detalleOperacion = 'Error: División por cero';
-            resultado = 0;
-          }
+          _manejarDivision(numero1, numero2);
           break;
         case '^':
           resultado = math.pow(numero1, numero2).toDouble();
@@ -296,18 +278,138 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
           break;
         case '√':
           if (numero2 == 0) numero2 = 2; // Raíz cuadrada por defecto
-          if (numero1 >= 0) {
+          if (numero1 >= 0 && numero2 > 0) {
             resultado = math.pow(numero1, 1 / numero2).toDouble();
             detalleOperacion =
                 '${numero2.toInt()}√$numero1 = ${resultado.toStringAsFixed(4)}';
           } else {
             detalleOperacion =
-                'Error: No se puede calcular raíz de número negativo';
+                'Error: Raíz inválida (número negativo o índice no positivo)';
             resultado = 0;
           }
           break;
       }
     });
+  }
+
+  void _showError(String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje), backgroundColor: Colors.red),
+    );
+  }
+
+  void _manejarDivision(double dividendo, double divisor) {
+    if (divisor == 0) {
+      // Manejo especial para división por cero
+      resultado = double.infinity;
+      detalleOperacion = 'Error: División por cero no definida';
+
+      // Mostrar diálogo de error específico
+      _mostrarDialogoDivisionPorCero(dividendo);
+
+      // También mostrar SnackBar para feedback inmediato
+      _showError('⚠️ Error: No se puede dividir por cero');
+    } else if (divisor.abs() < 0.0000001) {
+      // Manejo para números muy pequeños que pueden causar problemas
+      resultado = double.infinity;
+      detalleOperacion = 'Error: División por número demasiado pequeño';
+      _showError('⚠️ Error: El divisor es demasiado pequeño');
+    } else {
+      // División normal
+      double cociente = dividendo / divisor;
+      double residuo = dividendo % divisor;
+      resultado = cociente;
+
+      detalleOperacion =
+          '$dividendo ÷ $divisor = ${cociente.toStringAsFixed(4)}';
+
+      // Mostrar detalles adicionales solo si hay residuo significativo
+      if (residuo.abs() > 0.0001) {
+        detalleOperacion += '\nCociente: ${cociente.toStringAsFixed(4)}';
+        detalleOperacion += '\nResiduo: ${residuo.toStringAsFixed(4)}';
+      }
+
+      // Verificar si el resultado es muy grande
+      if (cociente.abs() > 1e10) {
+        detalleOperacion += '\n⚠️ Resultado muy grande';
+      }
+    }
+  }
+
+  void _mostrarDialogoDivisionPorCero(double dividendo) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.red, size: 30),
+              const SizedBox(width: 10),
+              const Text(
+                '¡Error Matemático!',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'División por cero no está definida en matemáticas.',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 15),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red[200]!),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Operación intentada: $dividendo ÷ 0',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '• No existe un número que multiplicado por 0 dé un resultado diferente de 0',
+                    ),
+                    const Text('• El resultado tiende al infinito'),
+                    const Text('• Intenta usar un divisor diferente de cero'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.white,
+          actions: [
+            TextButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Limpiar el segundo campo automáticamente
+                _controllerNumero2.clear();
+              },
+              icon: const Icon(Icons.refresh, color: Colors.blue),
+              label: const Text('Corregir'),
+            ),
+            TextButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              icon: const Icon(Icons.check, color: Colors.green),
+              label: const Text('Entendido'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void limpiar() {
@@ -322,29 +424,31 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
     });
   }
 
-  Widget _buildOperationButton(String symbol, String name, Color color) {
+  Widget _buildCalculatorButton(
+    String symbol,
+    Color color, {
+    bool isWide = false,
+  }) {
     return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      flex: isWide ? 2 : 1,
+      child: Container(
+        height: 50,
+        margin: const EdgeInsets.all(2.0),
         child: ElevatedButton(
           onPressed: () => calcular(symbol),
           style: ElevatedButton.styleFrom(
             backgroundColor: color,
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            elevation: 3,
+            shadowColor: Colors.black26,
+            padding: EdgeInsets.zero,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                symbol,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(name, style: const TextStyle(fontSize: 10)),
-            ],
+          child: Text(
+            symbol,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
       ),
@@ -362,9 +466,10 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('🧮 Calculadora Científica'),
-        backgroundColor: Colors.green,
+        title: const Text('🧮 Calculadora Pro'),
+        backgroundColor: Colors.grey[900],
         foregroundColor: Colors.white,
+        elevation: 10,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -373,7 +478,7 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
           children: [
             // Título de bienvenida
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
                 color: Colors.green[50],
                 borderRadius: BorderRadius.circular(15),
@@ -390,7 +495,7 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
 
             // Campo para el primer número
             TextField(
@@ -403,9 +508,9 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
 
-            // Campo para el segundo número / exponente / base
+            // Campo para el segundo número
             TextField(
               controller: _controllerNumero2,
               keyboardType: TextInputType.number,
@@ -413,35 +518,53 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
                 labelText: 'Segundo número / Exponente / Índice de raíz',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.looks_two),
-                helperText: 'Para √, deja vacío para raíz cuadrada por defecto',
+                helperText: 'Para √, deja vacío para raíz cuadrada',
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
 
-            // Botones de operaciones básicas
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildOperationButton('+', 'Sumar', Colors.blue),
-                _buildOperationButton('-', 'Restar', Colors.red),
-                _buildOperationButton('×', 'Multiplicar', Colors.green),
-                _buildOperationButton('÷', 'Dividir', Colors.orange),
-              ],
+            // Teclado de calculadora compacto
+            Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.grey[850],
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    spreadRadius: 2,
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Fila 1: Funciones especiales
+                  Row(
+                    children: [
+                      _buildCalculatorButton('^', Colors.blue[700]!),
+                      _buildCalculatorButton('√', Colors.blue[700]!),
+                      _buildCalculatorButton('÷', Colors.orange[600]!),
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  // Fila 2: Multiplicación y resta
+                  Row(
+                    children: [
+                      _buildCalculatorButton('×', Colors.orange[600]!),
+                      _buildCalculatorButton('−', Colors.orange[600]!),
+                      _buildCalculatorButton('+', Colors.orange[600]!),
+                    ],
+                  ),
+                ],
+              ),
             ),
 
-            const SizedBox(height: 10),
-
-            // Botones de operaciones avanzadas
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildOperationButton('^', 'Potencia', Colors.purple),
-                _buildOperationButton('√', 'Raíz', Colors.teal),
-              ],
-            ),
-
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
 
             // Mostrar resultado
             if (operacion.isNotEmpty)
@@ -500,12 +623,42 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
                           color: Colors.green,
                         ),
                       ),
+                    ] else ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.red[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.red[300]!),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error, color: Colors.red[600], size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                resultado == double.infinity
+                                    ? 'INDEFINIDO (∞)'
+                                    : 'ERROR',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red[700],
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ],
                 ),
               ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
 
             // Botones de acción
             Row(
