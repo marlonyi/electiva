@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 void main() {
   runApp(const MyApp());
@@ -224,31 +225,87 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
   double numero2 = 0;
   double resultado = 0;
   String operacion = '';
+  String detalleOperacion = '';
   bool esperandoSegundoNumero = false;
 
   final TextEditingController _controllerNumero1 = TextEditingController();
   final TextEditingController _controllerNumero2 = TextEditingController();
 
   void calcular(String op) {
-    if (_controllerNumero1.text.isEmpty || _controllerNumero2.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('¡Por favor ingresa ambos números!'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
+    // Validación para operaciones que solo requieren un número
+    if (op == '√') {
+      if (_controllerNumero1.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('¡Por favor ingresa el número!'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+    } else {
+      // Validación para operaciones que requieren dos números
+      if (_controllerNumero1.text.isEmpty || _controllerNumero2.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('¡Por favor ingresa ambos números!'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
     }
 
     setState(() {
       numero1 = double.tryParse(_controllerNumero1.text) ?? 0;
       numero2 = double.tryParse(_controllerNumero2.text) ?? 0;
       operacion = op;
+      detalleOperacion = '';
 
-      if (op == '+') {
-        resultado = numero1 + numero2;
-      } else if (op == '-') {
-        resultado = numero1 - numero2;
+      switch (op) {
+        case '+':
+          resultado = numero1 + numero2;
+          detalleOperacion = '$numero1 + $numero2 = $resultado';
+          break;
+        case '-':
+          resultado = numero1 - numero2;
+          detalleOperacion = '$numero1 - $numero2 = $resultado';
+          break;
+        case '×':
+          resultado = numero1 * numero2;
+          detalleOperacion = '$numero1 × $numero2 = $resultado';
+          break;
+        case '÷':
+          if (numero2 != 0) {
+            double cociente = numero1 / numero2;
+            double residuo = numero1 % numero2;
+            resultado = cociente;
+            detalleOperacion =
+                '$numero1 ÷ $numero2 = ${cociente.toStringAsFixed(2)}';
+            if (residuo != 0) {
+              detalleOperacion += ' (residuo: ${residuo.toStringAsFixed(2)})';
+            }
+          } else {
+            detalleOperacion = 'Error: División por cero';
+            resultado = 0;
+          }
+          break;
+        case '^':
+          resultado = math.pow(numero1, numero2).toDouble();
+          detalleOperacion = '$numero1^$numero2 = $resultado';
+          break;
+        case '√':
+          if (numero2 == 0) numero2 = 2; // Raíz cuadrada por defecto
+          if (numero1 >= 0) {
+            resultado = math.pow(numero1, 1 / numero2).toDouble();
+            detalleOperacion =
+                '${numero2.toInt()}√$numero1 = ${resultado.toStringAsFixed(4)}';
+          } else {
+            detalleOperacion =
+                'Error: No se puede calcular raíz de número negativo';
+            resultado = 0;
+          }
+          break;
       }
     });
   }
@@ -261,7 +318,37 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
       numero2 = 0;
       resultado = 0;
       operacion = '';
+      detalleOperacion = '';
     });
+  }
+
+  Widget _buildOperationButton(String symbol, String name, Color color) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: ElevatedButton(
+          onPressed: () => calcular(symbol),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: color,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                symbol,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(name, style: const TextStyle(fontSize: 10)),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -275,14 +362,14 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('🧮 Calculadora Simple'),
+        title: const Text('🧮 Calculadora Científica'),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             // Título de bienvenida
             Container(
@@ -303,7 +390,7 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
             // Campo para el primer número
             TextField(
@@ -318,84 +405,107 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
 
             const SizedBox(height: 20),
 
-            // Campo para el segundo número
+            // Campo para el segundo número / exponente / base
             TextField(
               controller: _controllerNumero2,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                labelText: 'Segundo número',
+                labelText: 'Segundo número / Exponente / Índice de raíz',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.looks_two),
+                helperText: 'Para √, deja vacío para raíz cuadrada por defecto',
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
-            // Botones de operaciones
+            // Botones de operaciones básicas
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                // Botón sumar
-                ElevatedButton(
-                  onPressed: () => calcular('+'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 15,
-                    ),
-                  ),
-                  child: const Text('+ Sumar', style: TextStyle(fontSize: 16)),
-                ),
-
-                // Botón restar
-                ElevatedButton(
-                  onPressed: () => calcular('-'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 30,
-                      vertical: 15,
-                    ),
-                  ),
-                  child: const Text('- Restar', style: TextStyle(fontSize: 16)),
-                ),
+                _buildOperationButton('+', 'Sumar', Colors.blue),
+                _buildOperationButton('-', 'Restar', Colors.red),
+                _buildOperationButton('×', 'Multiplicar', Colors.green),
+                _buildOperationButton('÷', 'Dividir', Colors.orange),
               ],
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 10),
+
+            // Botones de operaciones avanzadas
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildOperationButton('^', 'Potencia', Colors.purple),
+                _buildOperationButton('√', 'Raíz', Colors.teal),
+              ],
+            ),
+
+            const SizedBox(height: 20),
 
             // Mostrar resultado
             if (operacion.isNotEmpty)
               Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: Colors.grey, width: 2),
                 ),
                 child: Column(
                   children: [
-                    Text(
-                      'Operación: $numero1 $operacion $numero2',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Resultado: $resultado',
-                      style: const TextStyle(
-                        fontSize: 24,
+                    const Text(
+                      '📊 Resultado de la Operación',
+                      style: TextStyle(
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.indigo,
                       ),
                     ),
+                    const SizedBox(height: 15),
+                    Container(
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.3),
+                            spreadRadius: 1,
+                            blurRadius: 3,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        detalleOperacion.isNotEmpty
+                            ? detalleOperacion
+                            : 'Calculando...',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    if (!detalleOperacion.contains('Error')) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        '= ${resultado.toStringAsFixed(4)}',
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
             // Botones de acción
             Row(
@@ -424,6 +534,9 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
                 ),
               ],
             ),
+
+            // Espaciado final para evitar overflow
+            const SizedBox(height: 20),
           ],
         ),
       ),
