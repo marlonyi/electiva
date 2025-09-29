@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
+import 'home/home_page.dart';
+import 'calculator/calculator_page.dart';
+import 'weather/weather_page.dart';
+import 'utils/responsive_helper.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,400 +14,751 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Electiva Móvil - App Educativa',
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Mi Primera App'),
-          backgroundColor: Colors.indigo,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2196F3),
+          brightness: Brightness.light,
         ),
-        body: const PaginaPrincipal(),
-      ),
-    );
-  }
-}
-
-class PaginaPrincipal extends StatelessWidget {
-  const PaginaPrincipal({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Container(
-            padding: const EdgeInsets.all(20.0),
-            margin: const EdgeInsets.symmetric(horizontal: 20.0),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Icon(Icons.favorite, color: Colors.red, size: 30.0),
-                SizedBox(width: 10),
-                Text(
-                  '¡Hola, Flutter!',
-                  style: TextStyle(fontSize: 28.0, color: Colors.indigo),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const SegundaPantalla(),
-                ),
-              );
-              const snackBar = SnackBar(
-                content: Text('¡Bienvenido a la segunda pagina! 🎉'),
-                duration: Duration(seconds: 6),
-                backgroundColor: Colors.indigo,
-              );
-              ScaffoldMessenger.of(context).showSnackBar(snackBar);
-            },
-            child: const Text('Presióname'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class SegundaPantalla extends StatelessWidget {
-  const SegundaPantalla({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Segunda Pantalla'),
-        backgroundColor: Colors.indigo,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Mensaje de bienvenida
-              Container(
-                padding: const EdgeInsets.all(25.0),
-                decoration: BoxDecoration(
-                  color: Colors.indigo[50],
-                  borderRadius: BorderRadius.circular(15.0),
-                  border: Border.all(color: Colors.indigo, width: 2),
-                ),
-                child: const Text(
-                  '¡Bienvenido a la clase de Electiva!',
-                  style: TextStyle(
-                    fontSize: 24.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.indigo,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              // Pregunta
-              const Text(
-                '¿Quieres entrar a la calculadora?',
-                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w500),
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 30),
-
-              // Botones de respuesta
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // Botón SÍ
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PantallaCalculadora(),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 15,
-                      ),
-                    ),
-                    child: const Text('SÍ 👍', style: TextStyle(fontSize: 18)),
-                  ),
-
-                  // Botón NO
-                  ElevatedButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Row(
-                              children: [
-                                Icon(
-                                  Icons.sentiment_dissatisfied,
-                                  color: Colors.orange,
-                                ),
-                                const SizedBox(width: 8),
-                                const Text('¡Ouch!'),
-                              ],
-                            ),
-                            content: const Text(
-                              'Tampoco te queríamos aquí 😏\n\n¡Es broma! Esperamos que cambies de opinión pronto.',
-                            ),
-                            backgroundColor: Colors.orange[50],
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('😅 Entendido'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 30,
-                        vertical: 15,
-                      ),
-                    ),
-                    child: const Text('NO 👎', style: TextStyle(fontSize: 18)),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 40),
-
-              // Botón volver
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text('Volver atrás'),
-              ),
-            ],
+        useMaterial3: true,
+        appBarTheme: const AppBarTheme(centerTitle: true, elevation: 2),
+        cardTheme: CardTheme(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
+      home: const MainNavigationPage(),
     );
   }
 }
 
-class PantallaCalculadora extends StatefulWidget {
-  const PantallaCalculadora({super.key});
+class MainNavigationPage extends StatefulWidget {
+  const MainNavigationPage({super.key});
 
   @override
-  State<PantallaCalculadora> createState() => _PantallaCalculadoraState();
+  State<MainNavigationPage> createState() => _MainNavigationPageState();
 }
 
-class _PantallaCalculadoraState extends State<PantallaCalculadora> {
-  double numero1 = 0;
-  double numero2 = 0;
-  double resultado = 0;
-  String operacion = '';
-  String detalleOperacion = '';
-  bool esperandoSegundoNumero = false;
+class _MainNavigationPageState extends State<MainNavigationPage>
+    with TickerProviderStateMixin {
+  int _currentIndex = 0;
+  late PageController _pageController;
+  late AnimationController _animationController;
 
-  final TextEditingController _controllerNumero1 = TextEditingController();
-  final TextEditingController _controllerNumero2 = TextEditingController();
+  final List<Widget> _pages = [
+    const HomePage(),
+    const CalculatorPage(),
+    const WeatherPage(),
+  ];
 
-  void calcular(String op) {
-    // Validación de campos vacíos y numéricos
-    String n1 = _controllerNumero1.text.trim();
-    String n2 = _controllerNumero2.text.trim();
-    if (op == '√') {
-      if (n1.isEmpty || double.tryParse(n1) == null) {
-        _showError('Por favor ingresa un número válido para la raíz.');
-        return;
-      }
-    } else {
-      if (n1.isEmpty ||
-          n2.isEmpty ||
-          double.tryParse(n1) == null ||
-          double.tryParse(n2) == null) {
-        _showError('Por favor ingresa ambos números válidos.');
-        return;
-      }
-    }
+  final List<String> _titles = ['Inicio', 'Calculadora', 'Clima'];
 
+  final List<IconData> _icons = [
+    Icons.home_rounded,
+    Icons.calculate_rounded,
+    Icons.wb_sunny_rounded,
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _onItemTapped(int index) {
     setState(() {
-      numero1 = double.tryParse(n1) ?? 0;
-      numero2 = double.tryParse(n2) ?? 0;
-      operacion = op;
-      detalleOperacion = '';
-      switch (op) {
-        case '+':
-          resultado = numero1 + numero2;
-          detalleOperacion = '$numero1 + $numero2 = $resultado';
-          break;
-        case '−':
-        case '-':
-          resultado = numero1 - numero2;
-          detalleOperacion = '$numero1 − $numero2 = $resultado';
-          break;
-        case '×':
-          resultado = numero1 * numero2;
-          detalleOperacion = '$numero1 × $numero2 = $resultado';
-          break;
-        case '÷':
-          _manejarDivision(numero1, numero2);
-          break;
-        case '^':
-          resultado = math.pow(numero1, numero2).toDouble();
-          detalleOperacion = '$numero1^$numero2 = $resultado';
-          break;
-        case '√':
-          if (numero2 == 0) numero2 = 2; // Raíz cuadrada por defecto
-          if (numero1 >= 0 && numero2 > 0) {
-            resultado = math.pow(numero1, 1 / numero2).toDouble();
-            detalleOperacion =
-                '${numero2.toInt()}√$numero1 = ${resultado.toStringAsFixed(4)}';
-          } else {
-            detalleOperacion =
-                'Error: Raíz inválida (número negativo o índice no positivo)';
-            resultado = 0;
-          }
-          break;
-      }
+      _currentIndex = index;
+    });
+
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+
+    // Animación suave para el cambio de página
+    _animationController.forward().then((_) {
+      _animationController.reverse();
     });
   }
 
-  void _showError(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensaje), backgroundColor: Colors.red),
+  @override
+  Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final maxWidth = ResponsiveHelper.getMaxContentWidth(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: Text(
+            _titles[_currentIndex],
+            key: ValueKey<String>(_titles[_currentIndex]),
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: ResponsiveHelper.getResponsiveFontSize(context, 20),
+            ),
+          ),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        elevation: 0,
+        automaticallyImplyLeading: !isDesktop,
+      ),
+      drawer: isDesktop ? null : _buildDrawer(),
+      body:
+          isDesktop
+              ? Row(
+                children: [
+                  // Navegación lateral para desktop
+                  Container(
+                    width: 280,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      border: Border(
+                        right: BorderSide(
+                          color: Theme.of(context).dividerColor,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: _buildDesktopNavigation(),
+                  ),
+                  // Contenido principal
+                  Expanded(
+                    child: Container(
+                      constraints: BoxConstraints(maxWidth: maxWidth),
+                      child: _buildResponsiveBody(),
+                    ),
+                  ),
+                ],
+              )
+              : _buildResponsiveBody(),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: _onItemTapped,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white,
+          selectedItemColor: Theme.of(context).colorScheme.primary,
+          unselectedItemColor: Colors.grey[600],
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+          items: List.generate(_pages.length, (index) {
+            return BottomNavigationBarItem(
+              icon: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.all(_currentIndex == index ? 8.0 : 4.0),
+                decoration: BoxDecoration(
+                  color:
+                      _currentIndex == index
+                          ? Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.1)
+                          : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  _icons[index],
+                  size: _currentIndex == index ? 28 : 24,
+                ),
+              ),
+              label: _titles[index],
+            );
+          }),
+        ),
+      ),
     );
   }
 
-  void _manejarDivision(double dividendo, double divisor) {
-    if (divisor == 0) {
-      // Manejo especial para división por cero
-      resultado = double.infinity;
-      detalleOperacion = 'Error: División por cero no definida';
+  Widget _buildDrawer() {
+    return Drawer(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.primary.withOpacity(0.8),
+            ],
+          ),
+        ),
+        child: Column(
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(color: Colors.transparent),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: const Icon(
+                      Icons.school_rounded,
+                      size: 40,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Electiva Móvil',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Text(
+                    'App Educativa',
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    ...List.generate(_pages.length, (index) {
+                      return _buildDrawerItem(
+                        icon: _icons[index],
+                        title: _titles[index],
+                        subtitle: _getSubtitle(index),
+                        isSelected: _currentIndex == index,
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          _onItemTapped(index);
+                        },
+                      );
+                    }),
+                    const Divider(height: 40),
+                    ListTile(
+                      leading: Icon(
+                        Icons.info_outline,
+                        color: Colors.grey[600],
+                      ),
+                      title: const Text('Acerca de'),
+                      subtitle: const Text('Versión 1.0.0'),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        _showAboutDialog();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-      // Mostrar diálogo de error específico
-      _mostrarDialogoDivisionPorCero(dividendo);
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color:
+            isSelected
+                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color:
+                isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey[200],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: isSelected ? Colors.white : Colors.grey[700],
+            size: 24,
+          ),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color:
+                isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey[800],
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+        ),
+        onTap: onTap,
+      ),
+    );
+  }
 
-      // También mostrar SnackBar para feedback inmediato
-      _showError('⚠️ Error: No se puede dividir por cero');
-    } else if (divisor.abs() < 0.0000001) {
-      // Manejo para números muy pequeños que pueden causar problemas
-      resultado = double.infinity;
-      detalleOperacion = 'Error: División por número demasiado pequeño';
-      _showError('⚠️ Error: El divisor es demasiado pequeño');
-    } else {
-      // División normal
-      double cociente = dividendo / divisor;
-      double residuo = dividendo % divisor;
-      resultado = cociente;
-
-      detalleOperacion =
-          '$dividendo ÷ $divisor = ${cociente.toStringAsFixed(4)}';
-
-      // Mostrar detalles adicionales solo si hay residuo significativo
-      if (residuo.abs() > 0.0001) {
-        detalleOperacion += '\nCociente: ${cociente.toStringAsFixed(4)}';
-        detalleOperacion += '\nResiduo: ${residuo.toStringAsFixed(4)}';
-      }
-
-      // Verificar si el resultado es muy grande
-      if (cociente.abs() > 1e10) {
-        detalleOperacion += '\n⚠️ Resultado muy grande';
-      }
+  String _getSubtitle(int index) {
+    switch (index) {
+      case 0:
+        return 'Página principal';
+      case 1:
+        return 'Calculadora científica';
+      case 2:
+        return 'Información del clima';
+      default:
+        return '';
     }
   }
 
-  void _mostrarDialogoDivisionPorCero(double dividendo) {
+  void _showAboutDialog() {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Row(
             children: [
-              Icon(Icons.error_outline, color: Colors.red, size: 30),
-              const SizedBox(width: 10),
-              const Text(
-                '¡Error Matemático!',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'División por cero no está definida en matemáticas.',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 15),
               Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red[200]!),
+                padding: EdgeInsets.all(
+                  ResponsiveHelper.getResponsiveSpacing(context, 8),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Operación intentada: $dividendo ÷ 0',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      '• No existe un número que multiplicado por 0 dé un resultado diferente de 0',
-                    ),
-                    const Text('• El resultado tiende al infinito'),
-                    const Text('• Intenta usar un divisor diferente de cero'),
                   ],
                 ),
+                child: Icon(
+                  Icons.school_rounded,
+                  color: Colors.white,
+                  size: ResponsiveHelper.getResponsiveFontSize(context, 28),
+                ),
+              ),
+              SizedBox(
+                width: ResponsiveHelper.getResponsiveSpacing(context, 12),
+              ),
+              Expanded(
+                child: Text(
+                  'Acerca de la Aplicación',
+                  style: TextStyle(
+                    fontSize: ResponsiveHelper.getResponsiveFontSize(
+                      context,
+                      20,
+                    ),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
-          backgroundColor: Colors.white,
+          content: SizedBox(
+            width: isDesktop ? 500 : double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Información principal
+                  Container(
+                    padding: ResponsiveHelper.getResponsivePadding(context),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.1),
+                          Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.05),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.2),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Electiva Móvil',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: ResponsiveHelper.getResponsiveFontSize(
+                              context,
+                              18,
+                            ),
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        Text(
+                          'Aplicación Educativa Responsiva',
+                          style: TextStyle(
+                            fontSize: ResponsiveHelper.getResponsiveFontSize(
+                              context,
+                              14,
+                            ),
+                            color: Colors.grey[600],
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                        SizedBox(
+                          height: ResponsiveHelper.getResponsiveSpacing(
+                            context,
+                            12,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              size: ResponsiveHelper.getResponsiveFontSize(
+                                context,
+                                16,
+                              ),
+                              color: Colors.grey[600],
+                            ),
+                            SizedBox(
+                              width: ResponsiveHelper.getResponsiveSpacing(
+                                context,
+                                8,
+                              ),
+                            ),
+                            Text(
+                              'Versión 1.0.0',
+                              style: TextStyle(
+                                fontSize:
+                                    ResponsiveHelper.getResponsiveFontSize(
+                                      context,
+                                      14,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: ResponsiveHelper.getResponsiveSpacing(
+                            context,
+                            8,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.code,
+                              size: ResponsiveHelper.getResponsiveFontSize(
+                                context,
+                                16,
+                              ),
+                              color: Colors.grey[600],
+                            ),
+                            SizedBox(
+                              width: ResponsiveHelper.getResponsiveSpacing(
+                                context,
+                                8,
+                              ),
+                            ),
+                            Text(
+                              'Desarrollado con Flutter',
+                              style: TextStyle(
+                                fontSize:
+                                    ResponsiveHelper.getResponsiveFontSize(
+                                      context,
+                                      14,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(
+                    height: ResponsiveHelper.getResponsiveSpacing(context, 20),
+                  ),
+
+                  // Características
+                  Container(
+                    padding: ResponsiveHelper.getResponsivePadding(context),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: Colors.grey[200]!),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.star_rounded,
+                              color: Colors.amber,
+                              size: ResponsiveHelper.getResponsiveFontSize(
+                                context,
+                                20,
+                              ),
+                            ),
+                            SizedBox(
+                              width: ResponsiveHelper.getResponsiveSpacing(
+                                context,
+                                8,
+                              ),
+                            ),
+                            Text(
+                              'Características Principales:',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize:
+                                    ResponsiveHelper.getResponsiveFontSize(
+                                      context,
+                                      16,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: ResponsiveHelper.getResponsiveSpacing(
+                            context,
+                            12,
+                          ),
+                        ),
+                        ...[
+                              '🧮 Calculadora científica avanzada con funciones trigonométricas',
+                              '🌤️ Información meteorológica en tiempo real con API',
+                              '📱 Diseño responsivo para móvil, tablet y desktop',
+                              '🎨 Interfaz moderna con Material Design 3',
+                              '🚀 Navegación fluida y animaciones suaves',
+                              '💡 Arquitectura modular y escalable',
+                            ]
+                            .map(
+                              (feature) => Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical:
+                                      ResponsiveHelper.getResponsiveSpacing(
+                                        context,
+                                        4,
+                                      ),
+                                ),
+                                child: Text(
+                                  feature,
+                                  style: TextStyle(
+                                    fontSize:
+                                        ResponsiveHelper.getResponsiveFontSize(
+                                          context,
+                                          14,
+                                        ),
+                                    height: 1.3,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(
+                    height: ResponsiveHelper.getResponsiveSpacing(context, 20),
+                  ),
+
+                  // Información técnica
+                  Container(
+                    padding: ResponsiveHelper.getResponsivePadding(context),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: Colors.blue[200]!),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.engineering,
+                              color: Colors.blue[700],
+                              size: ResponsiveHelper.getResponsiveFontSize(
+                                context,
+                                20,
+                              ),
+                            ),
+                            SizedBox(
+                              width: ResponsiveHelper.getResponsiveSpacing(
+                                context,
+                                8,
+                              ),
+                            ),
+                            Text(
+                              'Detalles Técnicos:',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize:
+                                    ResponsiveHelper.getResponsiveFontSize(
+                                      context,
+                                      16,
+                                    ),
+                                color: Colors.blue[800],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: ResponsiveHelper.getResponsiveSpacing(
+                            context,
+                            12,
+                          ),
+                        ),
+                        ...[
+                              '🔧 Framework: Flutter (Dart)',
+                              '📦 Arquitectura: Modular con responsive design',
+                              '🌐 APIs: OpenWeatherMap para clima',
+                              '🎯 Plataformas: Windows, Web, Android, iOS',
+                              '📊 Estado: Gestión eficiente con StatefulWidget',
+                              '🎨 UI: Material Design 3 con temas adaptativos',
+                            ]
+                            .map(
+                              (tech) => Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical:
+                                      ResponsiveHelper.getResponsiveSpacing(
+                                        context,
+                                        4,
+                                      ),
+                                ),
+                                child: Text(
+                                  tech,
+                                  style: TextStyle(
+                                    fontSize:
+                                        ResponsiveHelper.getResponsiveFontSize(
+                                          context,
+                                          14,
+                                        ),
+                                    height: 1.3,
+                                    color: Colors.blue[800],
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(
+                    height: ResponsiveHelper.getResponsiveSpacing(context, 16),
+                  ),
+
+                  // Footer
+                  Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        vertical: ResponsiveHelper.getResponsiveSpacing(
+                          context,
+                          8,
+                        ),
+                        horizontal: ResponsiveHelper.getResponsiveSpacing(
+                          context,
+                          16,
+                        ),
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: Text(
+                        '© 2025 Electiva Móvil - Proyecto Educativo',
+                        style: TextStyle(
+                          fontSize: ResponsiveHelper.getResponsiveFontSize(
+                            context,
+                            12,
+                          ),
+                          color: Colors.grey[600],
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           actions: [
             TextButton.icon(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Limpiar el segundo campo automáticamente
-                _controllerNumero2.clear();
-              },
-              icon: const Icon(Icons.refresh, color: Colors.blue),
-              label: const Text('Corregir'),
-            ),
-            TextButton.icon(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              icon: const Icon(Icons.check, color: Colors.green),
-              label: const Text('Entendido'),
+              onPressed: () => Navigator.of(context).pop(),
+              icon: Icon(
+                Icons.close,
+                size: ResponsiveHelper.getResponsiveFontSize(context, 18),
+              ),
+              label: Text(
+                'Cerrar',
+                style: TextStyle(
+                  fontSize: ResponsiveHelper.getResponsiveFontSize(context, 16),
+                ),
+              ),
+              style: TextButton.styleFrom(
+                padding: ResponsiveHelper.getResponsivePadding(context),
+              ),
             ),
           ],
         );
@@ -412,287 +766,192 @@ class _PantallaCalculadoraState extends State<PantallaCalculadora> {
     );
   }
 
-  void limpiar() {
-    setState(() {
-      _controllerNumero1.clear();
-      _controllerNumero2.clear();
-      numero1 = 0;
-      numero2 = 0;
-      resultado = 0;
-      operacion = '';
-      detalleOperacion = '';
-    });
-  }
-
-  Widget _buildCalculatorButton(
-    String symbol,
-    Color color, {
-    bool isWide = false,
-  }) {
-    return Expanded(
-      flex: isWide ? 2 : 1,
-      child: Container(
-        height: 50,
-        margin: const EdgeInsets.all(2.0),
-        child: ElevatedButton(
-          onPressed: () => calcular(symbol),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: color,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
+  Widget _buildResponsiveBody() {
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: 1.0 - (_animationController.value * 0.03),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: ResponsiveHelper.getMaxContentWidth(context),
+              ),
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+                children: _pages,
+              ),
             ),
-            elevation: 3,
-            shadowColor: Colors.black26,
-            padding: EdgeInsets.zero,
           ),
-          child: Text(
-            symbol,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  @override
-  void dispose() {
-    _controllerNumero1.dispose();
-    _controllerNumero2.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('🧮 Calculadora Pro'),
-        backgroundColor: Colors.grey[900],
-        foregroundColor: Colors.white,
-        elevation: 10,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            // Título de bienvenida
-            Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: Colors.green[50],
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.green, width: 2),
-              ),
-              child: const Text(
-                '¡Gracias por hacer parte de la clase!\nAquí tienes tu calculadora 🎉',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            // Campo para el primer número
-            TextField(
-              controller: _controllerNumero1,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Primer número',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.looks_one),
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            // Campo para el segundo número
-            TextField(
-              controller: _controllerNumero2,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Segundo número / Exponente / Índice de raíz',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.looks_two),
-                helperText: 'Para √, deja vacío para raíz cuadrada',
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            // Teclado de calculadora compacto
-            Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: Colors.grey[850],
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    spreadRadius: 2,
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
+  Widget _buildDesktopNavigation() {
+    return Column(
+      children: [
+        // Header de la navegación
+        Container(
+          padding: ResponsiveHelper.getResponsivePadding(context),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  // Fila 1: Funciones especiales
-                  Row(
-                    children: [
-                      _buildCalculatorButton('^', Colors.blue[700]!),
-                      _buildCalculatorButton('√', Colors.blue[700]!),
-                      _buildCalculatorButton('÷', Colors.orange[600]!),
-                    ],
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.school_rounded,
+                      size: 32,
+                      color: Colors.white,
+                    ),
                   ),
-
-                  const SizedBox(height: 4),
-
-                  // Fila 2: Multiplicación y resta
-                  Row(
-                    children: [
-                      _buildCalculatorButton('×', Colors.orange[600]!),
-                      _buildCalculatorButton('−', Colors.orange[600]!),
-                      _buildCalculatorButton('+', Colors.orange[600]!),
-                    ],
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Electiva Móvil',
+                          style: TextStyle(
+                            fontSize: ResponsiveHelper.getResponsiveFontSize(
+                              context,
+                              20,
+                            ),
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        Text(
+                          'App Educativa',
+                          style: TextStyle(
+                            fontSize: ResponsiveHelper.getResponsiveFontSize(
+                              context,
+                              14,
+                            ),
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
-
-            const SizedBox(height: 15),
-
-            // Mostrar resultado
-            if (operacion.isNotEmpty)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Colors.grey, width: 2),
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      '📊 Resultado de la Operación',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.indigo,
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    Container(
-                      padding: const EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.3),
-                            spreadRadius: 1,
-                            blurRadius: 3,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        detalleOperacion.isNotEmpty
-                            ? detalleOperacion
-                            : 'Calculando...',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    if (!detalleOperacion.contains('Error')) ...[
-                      const SizedBox(height: 10),
-                      Text(
-                        '= ${resultado.toStringAsFixed(4)}',
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ] else ...[
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.red[50],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.red[300]!),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.error, color: Colors.red[600], size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                resultado == double.infinity
-                                    ? 'INDEFINIDO (∞)'
-                                    : 'ERROR',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red[700],
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-
-            const SizedBox(height: 15),
-
-            // Botones de acción
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Botón limpiar
-                ElevatedButton(
-                  onPressed: limpiar,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('🗑️ Limpiar'),
-                ),
-
-                // Botón volver
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('⬅️ Volver'),
-                ),
-              ],
-            ),
-
-            // Espaciado final para evitar overflow
-            const SizedBox(height: 20),
-          ],
+            ],
+          ),
         ),
-      ),
+        const Divider(),
+        // Lista de navegación
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            itemCount: _pages.length,
+            itemBuilder: (context, index) {
+              final isSelected = _currentIndex == index;
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                decoration: BoxDecoration(
+                  color:
+                      isSelected
+                          ? Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.1)
+                          : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color:
+                          isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      _icons[index],
+                      color: isSelected ? Colors.white : Colors.grey[700],
+                      size: 20,
+                    ),
+                  ),
+                  title: Text(
+                    _titles[index],
+                    style: TextStyle(
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                      color:
+                          isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.grey[800],
+                      fontSize: ResponsiveHelper.getResponsiveFontSize(
+                        context,
+                        16,
+                      ),
+                    ),
+                  ),
+                  subtitle: Text(
+                    _getSubtitle(index),
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: ResponsiveHelper.getResponsiveFontSize(
+                        context,
+                        12,
+                      ),
+                    ),
+                  ),
+                  onTap: () => _onItemTapped(index),
+                ),
+              );
+            },
+          ),
+        ),
+        const Divider(),
+        // Información adicional
+        Container(
+          padding: ResponsiveHelper.getResponsivePadding(context),
+          child: Column(
+            children: [
+              ListTile(
+                leading: Icon(
+                  Icons.info_outline,
+                  color: Colors.grey[600],
+                  size: 20,
+                ),
+                title: Text(
+                  'Acerca de',
+                  style: TextStyle(
+                    fontSize: ResponsiveHelper.getResponsiveFontSize(
+                      context,
+                      14,
+                    ),
+                  ),
+                ),
+                subtitle: Text(
+                  'Versión 1.0.0',
+                  style: TextStyle(
+                    fontSize: ResponsiveHelper.getResponsiveFontSize(
+                      context,
+                      12,
+                    ),
+                  ),
+                ),
+                onTap: _showAboutDialog,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
