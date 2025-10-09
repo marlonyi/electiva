@@ -20,6 +20,11 @@ class WeatherModel {
   });
 
   factory WeatherModel.fromJson(Map<String, dynamic> json) {
+    // Manejo seguro de campos opcionales con valores por defecto
+    final clouds = json['clouds'];
+    final precipitation =
+        clouds != null ? (clouds['all'] as num?)?.toInt() ?? 0 : 0;
+
     return WeatherModel(
       location: json['name'] ?? 'Ubicación desconocida',
       temperature: (json['main']['temp'] as num).toDouble(),
@@ -27,7 +32,7 @@ class WeatherModel {
       humidity: json['main']['humidity'] ?? 0,
       windSpeed: (json['wind']['speed'] as num).toDouble(),
       feelsLike: (json['main']['feels_like'] as num).toDouble(),
-      precipitation: json['clouds']['all'] ?? 0,
+      precipitation: precipitation,
       icon: json['weather'][0]['icon'] ?? '01d',
     );
   }
