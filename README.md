@@ -25,6 +25,16 @@
 
 ## ✨ Características
 
+### 🔐 Autenticación con Firebase
+
+- ✅ Login con email y contraseña
+- ✅ Registro de nuevos usuarios
+- ✅ Google Sign-In integrado
+- ✅ Restablecer contraseña por email
+- ✅ Verificación de email automática
+- ✅ Estado de autenticación persistente
+- ✅ Logout seguro
+
 ### 🌤️ Módulo Weather (Clima)
 
 - ✅ Consulta clima en tiempo real por ciudad
@@ -69,6 +79,9 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   http: ^1.2.1 # Llamadas HTTP a API externa
+  firebase_core: ^3.6.0 # Core Firebase
+  firebase_auth: ^5.3.1 # Autenticación Firebase
+  google_sign_in: ^6.2.1 # Google Sign-In
 
 dev_dependencies:
   flutter_test:
@@ -82,6 +95,12 @@ dev_dependencies:
 - Endpoint: `https://api.openweathermap.org/data/2.5/weather`
 - Unidades: Métricas (°C, m/s)
 
+### Servicios Firebase
+
+- **Firebase Authentication** - Gestión de usuarios y autenticación
+- **Google Sign-In** - Autenticación con cuentas Google
+- Características: Email/password, Google OAuth, email verification
+
 ---
 
 ## 🚀 Instalación
@@ -92,6 +111,7 @@ dev_dependencies:
 - Dart SDK 3.7.2 o superior
 - Android Studio / VS Code
 - Emulador Android/iOS o dispositivo físico
+- **Cuenta de Google para Firebase Console**
 
 ### Pasos
 
@@ -108,13 +128,57 @@ cd electiva
 flutter pub get
 ```
 
-3. **Verificar configuración de Flutter**
+3. **Configurar Firebase**
+
+   #### a. Crear proyecto en Firebase Console
+
+   1. Ve a [Firebase Console](https://console.firebase.google.com/)
+   2. Crea un nuevo proyecto
+   3. Habilita Authentication
+
+   #### b. Configurar Authentication
+
+   1. Ve a Authentication > Sign-in method
+   2. Habilita Email/Password y Google
+   3. Para Google: configura OAuth consent screen
+
+   #### c. Obtener configuración del proyecto
+
+   1. Ve a Project settings > General
+   2. En "Your apps", agrega una app web
+   3. Copia la configuración (apiKey, appId, etc.)
+
+   #### d. Actualizar firebase_options.dart
+
+   Edita `lib/firebase_options.dart` y reemplaza los valores:
+
+   ```dart
+   static const FirebaseOptions web = FirebaseOptions(
+     apiKey: 'tu-api-key-real',
+     appId: 'tu-app-id-real',
+     messagingSenderId: 'tu-messaging-sender-id-real',
+     projectId: 'tu-project-id-real',
+     authDomain: 'tu-project-id-real.firebaseapp.com',
+     storageBucket: 'tu-project-id-real.appspot.com',
+     measurementId: 'tu-measurement-id-real',
+   );
+   ```
+
+4. **Configurar API del Clima**
+
+   Crea un archivo `.env` en la raíz:
+
+   ```env
+   OPENWEATHER_API_KEY=tu-api-key-de-openweathermap
+   ```
+
+5. **Verificar configuración de Flutter**
 
 ```bash
 flutter doctor
 ```
 
-4. **Ejecutar la aplicación**
+6. **Ejecutar la aplicación**
 
 ```bash
 # En modo debug
@@ -124,7 +188,7 @@ flutter run
 flutter run --release
 ```
 
-5. **Ejecutar tests**
+7. **Ejecutar tests**
 
 ```bash
 flutter test
@@ -138,7 +202,14 @@ flutter test
 electiva/
 │
 ├── lib/                          # Código fuente de la aplicación
-│   ├── main.dart                 # Punto de entrada
+│   ├── main.dart                 # Punto de entrada con Firebase init
+│   ├── firebase_options.dart     # Configuración Firebase
+│   │
+│   ├── auth/                     # 🔐 Autenticación Firebase
+│   │   └── auth_service.dart
+│   │
+│   ├── screens/                  # Pantallas de UI
+│   │   └── login_screen.dart
 │   │
 │   ├── home/                     # Pantalla principal
 │   │   ├── home_page.dart

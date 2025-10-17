@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'firebase_options.dart';
 import 'home/home_page.dart';
 import 'calculator/calculator_page.dart';
 import 'weather/weather_page.dart';
 import 'utils/responsive_helper.dart';
+import 'auth/auth_service.dart';
+import 'screens/login_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -30,13 +37,14 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const MainNavigationPage(),
+      home: const AuthWrapper(),
     );
   }
 }
 
 class MainNavigationPage extends StatefulWidget {
-  const MainNavigationPage({super.key});
+  final bool isLoggedIn;
+  const MainNavigationPage({super.key, required this.isLoggedIn});
 
   @override
   State<MainNavigationPage> createState() => _MainNavigationPageState();
@@ -48,12 +56,7 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   late PageController _pageController;
   late AnimationController _animationController;
 
-  final List<Widget> _pages = [
-    const HomePage(),
-    const CalculatorPage(),
-    const WeatherPage(),
-  ];
-
+  late List<Widget> _pages;
   final List<String> _titles = ['Inicio', 'Calculadora', 'Clima'];
 
   final List<IconData> _icons = [
@@ -70,6 +73,81 @@ class _MainNavigationPageState extends State<MainNavigationPage>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
+    _updatePages();
+  }
+
+  void _updatePages() {
+    _pages = [
+      const HomePage(),
+      widget.isLoggedIn
+          ? const CalculatorPage()
+          : _buildLoginPrompt('Calculadora'),
+      widget.isLoggedIn ? const WeatherPage() : _buildLoginPrompt('Clima'),
+    ];
+  }
+
+  Widget _buildLoginPrompt(String featureName) {
+    return Scaffold(
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 400),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                featureName == 'Calculadora' ? Icons.calculate : Icons.wb_sunny,
+                size: 80,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Acceso Restringido',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Para usar la $featureName, necesitas iniciar sesión primero.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.login),
+                label: const Text('Iniciar Sesión'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                  textStyle: const TextStyle(fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void didUpdateWidget(MainNavigationPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isLoggedIn != widget.isLoggedIn) {
+      _updatePages();
+    }
   }
 
   @override
@@ -80,20 +158,28 @@ class _MainNavigationPageState extends State<MainNavigationPage>
   }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    if ((index == 1 || index == 2) && !widget.isLoggedIn) {
+      // Mostrar login si no está logueado y selecciona calculadora o clima
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    } else {
+      setState(() {
+        _currentIndex = index;
+      });
 
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
 
-    // Animación suave para el cambio de página
-    _animationController.forward().then((_) {
-      _animationController.reverse();
-    });
+      // Animación suave para el cambio de página
+      _animationController.forward().then((_) {
+        _animationController.reverse();
+      });
+    }
   }
 
   @override
@@ -265,6 +351,15 @@ class _MainNavigationPageState extends State<MainNavigationPage>
                       );
                     }),
                     const Divider(height: 40),
+                    if (widget.isLoggedIn)
+                      ListTile(
+                        leading: Icon(Icons.logout, color: Colors.red[600]),
+                        title: const Text('Cerrar Sesión'),
+                        onTap: () async {
+                          Navigator.of(context).pop();
+                          await AuthService().signOut();
+                        },
+                      ),
                     ListTile(
                       leading: Icon(
                         Icons.info_outline,
@@ -922,6 +1017,23 @@ class _MainNavigationPageState extends State<MainNavigationPage>
           padding: ResponsiveHelper.getResponsivePadding(context),
           child: Column(
             children: [
+              if (widget.isLoggedIn)
+                ListTile(
+                  leading: Icon(Icons.logout, color: Colors.red[600], size: 20),
+                  title: Text(
+                    'Cerrar Sesión',
+                    style: TextStyle(
+                      fontSize: ResponsiveHelper.getResponsiveFontSize(
+                        context,
+                        14,
+                      ),
+                    ),
+                  ),
+                  onTap: () async {
+                    await AuthService().signOut();
+                  },
+                ),
+              if (widget.isLoggedIn) const Divider(),
               ListTile(
                 leading: Icon(
                   Icons.info_outline,
@@ -952,6 +1064,29 @@ class _MainNavigationPageState extends State<MainNavigationPage>
           ),
         ),
       ],
+    );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: AuthService().authStateChanges,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        // Siempre muestra MainNavigationPage, pero con estado de auth
+        return MainNavigationPage(
+          isLoggedIn: snapshot.hasData && snapshot.data != null,
+        );
+      },
     );
   }
 }

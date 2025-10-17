@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import '../utils/responsive_helper.dart';
+import 'dart:ui';
 
 class CalculatorView extends StatefulWidget {
   const CalculatorView({super.key});
@@ -18,6 +18,9 @@ class _CalculatorViewState extends State<CalculatorView> {
 
   final TextEditingController _controllerNumero1 = TextEditingController();
   final TextEditingController _controllerNumero2 = TextEditingController();
+
+  // Estado para saber cuál campo está activo
+  bool _primerCampoActivo = true;
 
   void calcular(String op) {
     // Validación de campos vacíos y numéricos
@@ -209,400 +212,309 @@ class _CalculatorViewState extends State<CalculatorView> {
       resultado = 0;
       operacion = '';
       detalleOperacion = '';
+      _primerCampoActivo = true; // Resetear al primer campo
     });
-  }
-
-  Widget _buildCalculatorButton(
-    String symbol,
-    Color color, {
-    bool isWide = false,
-  }) {
-    return Expanded(
-      flex: isWide ? 2 : 1,
-      child: Container(
-        height: ResponsiveHelper.isDesktop(context) ? 60 : 50,
-        margin: EdgeInsets.all(
-          ResponsiveHelper.getResponsiveSpacing(context, 2.0),
-        ),
-        child: ElevatedButton(
-          onPressed: () => calcular(symbol),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: color,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            elevation: 3,
-            shadowColor: Colors.black26,
-            padding: EdgeInsets.zero,
-          ),
-          child: Text(
-            symbol,
-            style: TextStyle(
-              fontSize: ResponsiveHelper.getResponsiveFontSize(context, 20),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: ResponsiveHelper.getResponsivePadding(context),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 800),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              // Título de bienvenida
-              Container(
-                padding: ResponsiveHelper.getResponsivePadding(context),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.grey[800]!, Colors.grey[600]!],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  '¡Gracias por hacer parte de la clase!\n🧮 Calculadora Profesional 🧮',
-                  style: TextStyle(
-                    fontSize: ResponsiveHelper.getResponsiveFontSize(
-                      context,
-                      18,
-                    ),
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-
-              SizedBox(
-                height: ResponsiveHelper.getResponsiveSpacing(context, 15),
-              ),
-
-              // Campo para el primer número
-              TextField(
-                controller: _controllerNumero1,
-                keyboardType: TextInputType.number,
-                style: TextStyle(
-                  fontSize: ResponsiveHelper.getResponsiveFontSize(context, 16),
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Primer número',
-                  labelStyle: TextStyle(
-                    fontSize: ResponsiveHelper.getResponsiveFontSize(
-                      context,
-                      14,
-                    ),
-                  ),
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.looks_one),
-                  contentPadding: ResponsiveHelper.getResponsivePadding(
-                    context,
-                  ),
-                ),
-              ),
-
-              SizedBox(
-                height: ResponsiveHelper.getResponsiveSpacing(context, 15),
-              ),
-
-              // Campo para el segundo número
-              TextField(
-                controller: _controllerNumero2,
-                keyboardType: TextInputType.number,
-                style: TextStyle(
-                  fontSize: ResponsiveHelper.getResponsiveFontSize(context, 16),
-                ),
-                decoration: InputDecoration(
-                  labelText:
-                      ResponsiveHelper.isDesktop(context)
-                          ? 'Segundo número / Exponente / Índice de raíz'
-                          : 'Segundo número',
-                  labelStyle: TextStyle(
-                    fontSize: ResponsiveHelper.getResponsiveFontSize(
-                      context,
-                      14,
-                    ),
-                  ),
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.looks_two),
-                  helperText: 'Para √, deja vacío para raíz cuadrada',
-                  helperStyle: TextStyle(
-                    fontSize: ResponsiveHelper.getResponsiveFontSize(
-                      context,
-                      12,
-                    ),
-                  ),
-                  contentPadding: ResponsiveHelper.getResponsivePadding(
-                    context,
-                  ),
-                ),
-              ),
-
-              SizedBox(
-                height: ResponsiveHelper.getResponsiveSpacing(context, 15),
-              ),
-
-              // Teclado de calculadora compacto
-              Container(
-                padding: ResponsiveHelper.getResponsivePadding(context),
-                decoration: BoxDecoration(
-                  color: Colors.grey[850],
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
+      backgroundColor: Colors.transparent,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                // Header
+                Row(
                   children: [
-                    // Fila 1: Funciones especiales
-                    ResponsiveHelper.isDesktop(context)
-                        ? Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildCalculatorButton('^', Colors.blue[700]!),
-                            _buildCalculatorButton('√', Colors.blue[700]!),
-                            _buildCalculatorButton('÷', Colors.orange[600]!),
-                            _buildCalculatorButton('×', Colors.orange[600]!),
-                            _buildCalculatorButton('−', Colors.orange[600]!),
-                            _buildCalculatorButton('+', Colors.orange[600]!),
-                          ],
-                        )
-                        : Column(
-                          children: [
-                            Row(
-                              children: [
-                                _buildCalculatorButton('^', Colors.blue[700]!),
-                                _buildCalculatorButton('√', Colors.blue[700]!),
-                                _buildCalculatorButton(
-                                  '÷',
-                                  Colors.orange[600]!,
-                                ),
-                              ],
-                            ),
-                            SizedBox(
-                              height: ResponsiveHelper.getResponsiveSpacing(
-                                context,
-                                4,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                _buildCalculatorButton(
-                                  '×',
-                                  Colors.orange[600]!,
-                                ),
-                                _buildCalculatorButton(
-                                  '−',
-                                  Colors.orange[600]!,
-                                ),
-                                _buildCalculatorButton(
-                                  '+',
-                                  Colors.orange[600]!,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                    const Icon(Icons.calculate, color: Colors.white, size: 28),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Calculadora',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: limpiar,
+                      icon: const Icon(Icons.refresh, color: Colors.white),
+                    ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 14),
 
-              SizedBox(
-                height: ResponsiveHelper.getResponsiveSpacing(context, 15),
-              ),
-
-              // Mostrar resultado
-              if (operacion.isNotEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: ResponsiveHelper.getResponsivePadding(context),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.grey, width: 2),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        '📊 Resultado de la Operación',
-                        style: TextStyle(
-                          fontSize: ResponsiveHelper.getResponsiveFontSize(
-                            context,
-                            18,
-                          ),
-                          fontWeight: FontWeight.bold,
-                          color: Colors.indigo,
-                        ),
+                // Pantalla estilo glassmorphism
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 16,
                       ),
-                      SizedBox(
-                        height: ResponsiveHelper.getResponsiveSpacing(
-                          context,
-                          15,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.08),
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
                       ),
-                      Container(
-                        padding: ResponsiveHelper.getResponsivePadding(context),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.3),
-                              spreadRadius: 1,
-                              blurRadius: 3,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          detalleOperacion.isNotEmpty
-                              ? detalleOperacion
-                              : 'Calculando...',
-                          style: TextStyle(
-                            fontSize: ResponsiveHelper.getResponsiveFontSize(
-                              context,
-                              16,
-                            ),
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      if (!detalleOperacion.contains('Error')) ...[
-                        SizedBox(
-                          height: ResponsiveHelper.getResponsiveSpacing(
-                            context,
-                            10,
-                          ),
-                        ),
-                        Text(
-                          '= ${resultado.toStringAsFixed(4)}',
-                          style: TextStyle(
-                            fontSize: ResponsiveHelper.getResponsiveFontSize(
-                              context,
-                              28,
-                            ),
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
-                          ),
-                        ),
-                      ] else ...[
-                        SizedBox(
-                          height: ResponsiveHelper.getResponsiveSpacing(
-                            context,
-                            10,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(
-                            ResponsiveHelper.getResponsiveSpacing(context, 10),
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.red[50],
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.red[300]!),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          // Input fields row
+                          Row(
                             children: [
-                              Icon(
-                                Icons.error,
-                                color: Colors.red[600],
-                                size: ResponsiveHelper.getResponsiveFontSize(
-                                  context,
-                                  20,
-                                ),
-                              ),
-                              SizedBox(
-                                width: ResponsiveHelper.getResponsiveSpacing(
-                                  context,
-                                  8,
-                                ),
-                              ),
                               Expanded(
-                                child: Text(
-                                  resultado == double.infinity
-                                      ? 'INDEFINIDO (∞)'
-                                      : 'ERROR',
+                                child: TextField(
+                                  controller: _controllerNumero1,
+                                  keyboardType: TextInputType.number,
+                                  textAlign: TextAlign.right,
                                   style: TextStyle(
-                                    fontSize:
-                                        ResponsiveHelper.getResponsiveFontSize(
-                                          context,
-                                          20,
-                                        ),
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.red[700],
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  textAlign: TextAlign.center,
+                                  decoration: InputDecoration(
+                                    hintText: 'Número 1',
+                                    hintStyle: TextStyle(
+                                      color: Colors.white.withOpacity(0.45),
+                                    ),
+                                    border: InputBorder.none,
+                                  ),
+                                  onTap:
+                                      () => setState(
+                                        () => _primerCampoActivo = true,
+                                      ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: TextField(
+                                  controller: _controllerNumero2,
+                                  keyboardType: TextInputType.number,
+                                  textAlign: TextAlign.right,
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: 'Número 2',
+                                    hintStyle: TextStyle(
+                                      color: Colors.white.withOpacity(0.45),
+                                    ),
+                                    border: InputBorder.none,
+                                  ),
+                                  onTap:
+                                      () => setState(
+                                        () => _primerCampoActivo = false,
+                                      ),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    ],
+                          const Divider(color: Colors.white24, height: 18),
+                          // Resultado grande
+                          SizedBox(
+                            height: 56,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              reverse: true,
+                              child: Text(
+                                detalleOperacion.isNotEmpty
+                                    ? detalleOperacion
+                                    : resultado != 0
+                                    ? resultado.toString()
+                                    : 'Aquí aparecerá el resultado',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                textAlign: TextAlign.right,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
 
-              SizedBox(
-                height: ResponsiveHelper.getResponsiveSpacing(context, 15),
-              ),
+                const SizedBox(height: 18),
 
-              // Botones de acción
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // Botón limpiar
-                  ElevatedButton(
-                    onPressed: limpiar,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      padding: ResponsiveHelper.getResponsivePadding(context),
-                      textStyle: TextStyle(
-                        fontSize: ResponsiveHelper.getResponsiveFontSize(
-                          context,
-                          16,
+                // Teclado con estilo moderno
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    child: Column(
+                      children: [
+                        // Row 1
+                        Row(
+                          children: [
+                            _buildRoundButton('7'),
+                            _buildRoundButton('8'),
+                            _buildRoundButton('9'),
+                            _buildRoundButton(
+                              '÷',
+                              color: Colors.deepOrangeAccent,
+                            ),
+                          ],
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            _buildRoundButton('4'),
+                            _buildRoundButton('5'),
+                            _buildRoundButton('6'),
+                            _buildRoundButton(
+                              '×',
+                              color: Colors.deepOrangeAccent,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            _buildRoundButton('1'),
+                            _buildRoundButton('2'),
+                            _buildRoundButton('3'),
+                            _buildRoundButton(
+                              '−',
+                              color: Colors.deepOrangeAccent,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            _buildRoundButton('C', color: Colors.redAccent),
+                            _buildRoundButton('0'),
+                            _buildRoundButton('=', color: Colors.greenAccent),
+                            _buildRoundButton(
+                              '+',
+                              color: Colors.deepOrangeAccent,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            _buildRoundButton(
+                              '^',
+                              color: Colors.lightBlueAccent,
+                            ),
+                            _buildRoundButton(
+                              '√',
+                              color: Colors.lightBlueAccent,
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    child: const Text('🗑️ Limpiar'),
                   ),
-                ],
-              ),
-
-              // Espaciado final para evitar overflow
-              SizedBox(
-                height: ResponsiveHelper.getResponsiveSpacing(context, 20),
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildRoundButton(String text, {Color color = Colors.grey}) {
+    void handleTap() {
+      if (text == 'C') {
+        limpiar();
+      } else if (text == '=') {
+        // nothing special; calculations happen in calcular when operation buttons are pressed
+      } else if (_isNumeric(text)) {
+        _addDigit(text);
+      } else {
+        calcular(text);
+      }
+    }
+
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.all(6),
+        height: 64,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: handleTap,
+            splashColor: Colors.white24,
+            child: Ink(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color.withOpacity(0.95), color.withOpacity(0.85)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.3),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  bool _isNumeric(String text) {
+    return double.tryParse(text) != null;
+  }
+
+  void _addDigit(String digit) {
+    setState(() {
+      if (_primerCampoActivo) {
+        _controllerNumero1.text += digit;
+      } else {
+        _controllerNumero2.text += digit;
+      }
+    });
   }
 
   @override

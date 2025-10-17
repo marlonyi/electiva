@@ -3,8 +3,10 @@
 ![Tests](https://img.shields.io/badge/Tests-61%2F61-brightgreen)
 ![Coverage](https://img.shields.io/badge/Coverage-~90%25-green)
 ![Time](https://img.shields.io/badge/Time-~3s-blue)
+![Firebase](https://img.shields.io/badge/Firebase-Auth-orange)
 
 > Documentación completa de las 61 pruebas unitarias implementadas en el proyecto.
+> Incluye autenticación con Firebase y manejo de estado de usuario.
 
 ---
 
@@ -30,6 +32,15 @@
 | **Tiempo de ejecución** | ~3 segundos  |
 | **Archivos de test**    | 3            |
 | **Cobertura funcional** | ~90%         |
+| **Autenticación**       | Firebase ✅  |
+
+### Tecnologías de Testing
+
+- **Framework**: flutter_test (SDK)
+- **Mocking**: MockClient (http package)
+- **Cobertura**: flutter test --coverage
+- **CI/CD**: Ejecutable en cualquier plataforma
+- **Firebase**: Autenticación integrada
 
 ### Distribución por Módulo
 
